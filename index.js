@@ -1,37 +1,54 @@
 // Primary file for API
+/*
+Steps:
+1. Dependencies: http, string_decoder, url
+2. Create server using http.CreateServer method which requires req, res 
+3. Get url and parse (url.parse) which takes, req.url
+4. Get the pathname using parsedUrl.pathname
+5. Get pathname (trimmed using path.replace("^\/+|\/+$/g, '')
+6. If there's a query string, parse using parsedUrl.query
+7. Capture method with req.method
+8. Capture headers with req.headers
+9. Decode payload, if any (new StringDecoder('utf-8))
+10. Create buffer var with empty string
+11. TODO
+*/
+
 
 // Dependencies
 const http = require('http');
 const { StringDecoder } = require('string_decoder');
 const url = require('url');
+const config = require('./config');
 
 // The server should respond to all request with a string
 const server = http.createServer((req, res) => {
 	// Get url and parse
 	const parsedUrl = url.parse(req.url, true);
-
+	
 	// Get path to url
 	const path = parsedUrl.pathname;
+	
 	const trimmedPath = path.replace(/^\/+|\/+$/g, '');
 
 	// Get query string as object
 	var queryStringObject = parsedUrl.query;
-
+	
 	// Get http method
 	const method = req.method.toUpperCase();
-
+	;
 	// Get the headers as an object
 	const headers = req.headers;
 
 	// Get the payload, if any
 	const decoder = new StringDecoder('utf-8');
+	
 	let buffer = '';
 	req.on('data', (data) => {
 		buffer += decoder.write(data);
 	});
 	req.on('end', () => {
 		buffer += decoder.end();
-
 		// Choose handler req should go to; if not found, use 'notFound' handler
 		let chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
 
@@ -62,13 +79,13 @@ const server = http.createServer((req, res) => {
 		// Send response
 		
 		// Log path requested
-		console.log('Request received with this payload: ', buffer);
+		// console.log('Request received with this payload: ', buffer);
 	});
 });
 
-// Start the server, and have it listen on port 3000
-server.listen(3000, () => {
-	console.log('Listening on 3000....');
+// Start the server
+server.listen(config.port, () => {
+	console.log(`Listening on ${config.port}\nEnvironment: ${config.envName}`);
 });
 
 // Handlers
