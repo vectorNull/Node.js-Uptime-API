@@ -13,6 +13,8 @@ Steps:
 10. Create buffer var with empty string
 11. TODO
 */
+// cmd to create keys: openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+// place in /https
 
 
 // Dependencies
@@ -23,26 +25,20 @@ const config = require('./config');
 
 // The server should respond to all request with a string
 const server = http.createServer((req, res) => {
-	// Get url and parse
 	const parsedUrl = url.parse(req.url, true);
-	
-	// Get path to url
+
 	const path = parsedUrl.pathname;
-	
+
 	const trimmedPath = path.replace(/^\/+|\/+$/g, '');
 
-	// Get query string as object
 	var queryStringObject = parsedUrl.query;
-	
-	// Get http method
+
 	const method = req.method.toUpperCase();
-	;
-	// Get the headers as an object
 	const headers = req.headers;
 
 	// Get the payload, if any
 	const decoder = new StringDecoder('utf-8');
-	
+
 	let buffer = '';
 	req.on('data', (data) => {
 		buffer += decoder.write(data);
@@ -50,34 +46,36 @@ const server = http.createServer((req, res) => {
 	req.on('end', () => {
 		buffer += decoder.end();
 		// Choose handler req should go to; if not found, use 'notFound' handler
-		let chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
+		let chosenHandler =
+			typeof router[trimmedPath] !== 'undefined'
+				? router[trimmedPath]
+				: handlers.notFound;
 
 		// Construct data object to send to handler
 		let data = {
-			'trimmedPath' : trimmedPath,
-			'queryStringObject': queryStringObject,
-			'method': method,
-			'headers': headers,
-			'paylod': buffer
+			trimmedPath: trimmedPath,
+			queryStringObject: queryStringObject,
+			method: method,
+			headers: headers,
+			paylod: buffer,
 		};
 
 		//Route req to handler specified in router
 		chosenHandler(data, (statusCode, payload) => {
-			// Use the status code called back by the handler, or default to 200
-			statusCode = typeof(statusCode) === 'number' ? statusCode : 200
-			// Use the payload called back by the handler, or default to an empty obj
-			payload = typeof(payload) == 'object' ? payload : {};
-			//Convert payload to sting
+			statusCode = typeof statusCode === 'number' ? statusCode : 200;
+
+			payload = typeof payload == 'object' ? payload : {};
+
 			let payloadString = JSON.stringify(payload);
-			// Return res
+
 			res.setHeader('Content-Type', 'application/json');
-			res. writeHead(statusCode);
+			res.writeHead(statusCode);
 			res.end(payloadString);
-			console.log('Returning this response: ', statusCode, payloadString)
-		})
+			console.log('Returning this response: ', statusCode, payloadString);
+		});
 
 		// Send response
-		
+
 		// Log path requested
 		// console.log('Request received with this payload: ', buffer);
 	});
@@ -94,7 +92,7 @@ let handlers = {};
 // Sample handler
 handlers.sample = (data, cb) => {
 	// Cb http status code and payload obj
-	cb(406, {'name': 'sample handler'});
+	cb(406, { name: 'sample handler' });
 };
 
 // Not found handler
