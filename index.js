@@ -7,23 +7,47 @@
 const http = require('http');
 const { StringDecoder } = require('string_decoder');
 const url = require('url');
+const https = require('https');
+const fs = require('fs');
 const config = require('./config');
+const { callbackify } = require('util');
 
-// The server should respond to all request with a string
-const server = http.createServer((req, res) => {
+// Instantiate HTTP server
+const httpServer = http.createServer((req, res) => {
+	unifiedServer(req, res);
+});
+
+// Instantiate HTTPS server
+const httpsServerOptions = {
+	key: fs.readFileSync('./https/key.pem'),
+	cert: fs.readFileSync('./https/cert.pem'),
+};
+const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
+	unifiedServer(req, res);
+});
+// Start the HTTPS server
+httpsServer.listen(config.httpsPort, () => {
+	console.log(`Listening on ${config.httpsPort}`);
+});
+
+// Start the HTTP server
+httpServer.listen(config.httpPort, () => {
+	console.log(`Listening on ${config.httpPort}`);
+});
+
+let unifiedServer = (req, res) => {
 	const parsedUrl = url.parse(req.url, true);
-	
+
 	const path = parsedUrl.pathname;
-	
+
 	const trimmedPath = path.replace(/^\/+|\/+$/g, '');
-	
+
 	let queryStringObject = parsedUrl.query;
 
 	const method = req.method.toUpperCase();
-	
+
 	const headers = req.headers;
 
-	// Get the payload, if any
 	const decoder = new StringDecoder('utf-8');
 
 	let buffer = '';
@@ -61,24 +85,18 @@ const server = http.createServer((req, res) => {
 			console.log('Returning this response: ', statusCode, payloadString);
 		});
 	});
-});
-
-// Start the server
-server.listen(config.port, () => {
-	console.log(`Listening on ${config.port}\nEnvironment: ${config.envName}`);
-});
+};
 
 let handlers = {};
 
-handlers.sample = (data, cb) => {
-	// Cb http status code and payload obj
-	cb(406, { name: 'sample handler' });
-};
+handlers.ping = (data, cb) => {
+	cb(200);
+}
 
 handlers.notFound = (data, cb) => {
 	cb(404);
 };
 
 const router = {
-	sample: handlers.sample,
+	ping: handlers.ping,
 };
