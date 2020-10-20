@@ -10,7 +10,12 @@ const url = require('url');
 const https = require('https');
 const fs = require('fs');
 const config = require('./config');
-const { callbackify } = require('util');
+const _data = require('./lib/data');
+
+// @todo TESTING
+_data.delete('test', 'newFile', (err) => {
+	console.log('Error: ', err);
+});
 
 // Instantiate and start HTTP server
 /*-------------------------------------------------------------------------------------------------------------------*/
