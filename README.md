@@ -15,22 +15,22 @@ The https folder must container your cert.pem and key.pem
 Example API requests sent via Postman
 
 To create a user include the following requred fields:
-    {
-        "firstName": "<firstName>",
-        "lastName": "<lastName>",
-        "phone": "<10 digit number>",
-        "password": "<password>",
-        "tosAgreement": true
-    }
+        {
+            "firstName": "<firstName>",
+            "lastName": "<lastName>",
+            "phone": "<10 digit number>",
+            "password": "<password>",
+            "tosAgreement": true
+        }
 
 To create a check for a particular site:
-    {
-        "protocol": "https",
-        "url": "yahoo.com",
-        "method": "get",
-        "successCodes": [200, 201, 301, 302],
-        "timeoutSeconds": 3
-    }
+        {
+            "protocol": "https",
+            "url": "yahoo.com",
+            "method": "get",
+            "successCodes": [200, 201, 301, 302],
+            "timeoutSeconds": 3
+        }
 Be sure to include the token that's created by making a request like this:
 
     GET HTTP://localhost:3000/tokens
